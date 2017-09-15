@@ -8,12 +8,16 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Base64;
 
 public class Main {
 
 	private static String ACCESS_TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
+
+	private static String HARDWARESWAP_URL = "https://www.reddit.com/r/hardwareswap/new.xml?sort=new";
 
 	private static String GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client";
 	private static String DEVICE_ID = "DO_NOT_TRACK_THIS_DEVICE";
@@ -72,5 +76,19 @@ public class Main {
 
 			return null;
 		}
+	}
+
+	private String getListings(String access_token) {
+		try {
+			URL hardwareswapUrl = new URL(HARDWARESWAP_URL);
+
+			HttpsURLConnection connection = (HttpsURLConnection) hardwareswapUrl.openConnection();
+
+			connection.setRequestMethod("GET");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return "";
 	}
 }
