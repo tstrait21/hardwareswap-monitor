@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Base64;
 
@@ -23,7 +21,9 @@ public class Main {
 	private static String DEVICE_ID = "DO_NOT_TRACK_THIS_DEVICE";
 
 	public static void main(String[] args) {
-		System.out.println(retrieveToken(args[0], args[1]));
+		String access_token = (retrieveToken(args[0], args[1]));
+
+		System.out.println(getListings(access_token));
 	}
 
 	private static String retrieveToken(String client_id, String secret) {
@@ -35,6 +35,7 @@ public class Main {
 			connection.setRequestMethod("POST");
 
 			String userCredentials = client_id + ":" + secret;
+			System.out.println(userCredentials);
 			String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
 			connection.setRequestProperty("Authorization", basicAuth);
@@ -78,13 +79,35 @@ public class Main {
 		}
 	}
 
-	private String getListings(String access_token) {
+	private static String getListings(String access_token) {
 		try {
 			URL hardwareswapUrl = new URL(HARDWARESWAP_URL);
 
 			HttpsURLConnection connection = (HttpsURLConnection) hardwareswapUrl.openConnection();
 
 			connection.setRequestMethod("GET");
+
+			connection.setRequestProperty("Authorization", access_token);
+			connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
+			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+			connection.setDoOutput(false);
+
+			int responseCode = connection.getResponseCode();
+
+			System.out.println("Response code : " + responseCode);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+
+			in.close();
+
+			return response.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
