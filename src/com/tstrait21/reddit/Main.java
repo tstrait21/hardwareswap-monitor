@@ -2,116 +2,141 @@ package com.tstrait21.reddit;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.tstrait21.reddit.entity.Feed;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
 import java.net.URL;
 import java.util.Base64;
 
 public class Main {
 
-	private static String ACCESS_TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
+    private static String ACCESS_TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
 
-	private static String HARDWARESWAP_URL = "https://www.reddit.com/r/hardwareswap/new.xml?sort=new";
+    private static String HARDWARESWAP_URL = "https://www.reddit.com/r/hardwareswap/new.xml?sort=new";
 
-	private static String GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client";
-	private static String DEVICE_ID = "DO_NOT_TRACK_THIS_DEVICE";
+    private static String GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client";
+    private static String DEVICE_ID = "DO_NOT_TRACK_THIS_DEVICE";
 
-	public static void main(String[] args) {
-		String access_token = (retrieveToken(args[0], args[1]));
+    public static void main(String[] args) {
+        String access_token = (retrieveToken(args[0], args[1]));
 
-		System.out.println(getListings(access_token));
-	}
+        Feed feed = deserializeXml(getListings(access_token));
 
-	private static String retrieveToken(String client_id, String secret) {
-		try {
-			URL accessTokenUrl = new URL(ACCESS_TOKEN_URL);
+        for (int i = 0; i < feed.getEntry().size(); i++) {
+            System.out.println(feed.getEntry().get(i).getTitle());
+        }
+    }
 
-			HttpsURLConnection connection = (HttpsURLConnection) accessTokenUrl.openConnection();
+    private static String retrieveToken(String client_id, String secret) {
+        try {
+            URL accessTokenUrl = new URL(ACCESS_TOKEN_URL);
 
-			connection.setRequestMethod("POST");
+            HttpsURLConnection connection = (HttpsURLConnection) accessTokenUrl.openConnection();
 
-			String userCredentials = client_id + ":" + secret;
-			System.out.println(userCredentials);
-			String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
+            connection.setRequestMethod("POST");
 
-			connection.setRequestProperty("Authorization", basicAuth);
-			connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            String userCredentials = client_id + ":" + secret;
+            System.out.println(userCredentials);
+            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
 
-			String urlParams = "grant_type=" + GRANT_TYPE
-					+ "&device_id=" + DEVICE_ID;
+            connection.setRequestProperty("Authorization", basicAuth);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-			connection.setDoOutput(true);
-			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-			dos.writeBytes(urlParams);
-			dos.flush();
-			dos.close();
+            String urlParams = "grant_type=" + GRANT_TYPE
+                    + "&device_id=" + DEVICE_ID;
 
-			int responseCode = connection.getResponseCode();
+            connection.setDoOutput(true);
+            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+            dos.writeBytes(urlParams);
+            dos.flush();
+            dos.close();
 
-			System.out.println("Response code : " + responseCode);
+            int responseCode = connection.getResponseCode();
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+            System.out.println("Response code : " + responseCode);
 
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-			in.close();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
 
-			System.out.println(response.toString());
+            in.close();
 
-			JsonObject jsonObj = new Gson().fromJson(response.toString(), JsonObject.class);
+            System.out.println(response.toString());
 
-			String access_token = jsonObj.get("access_token").getAsString();
+            JsonObject jsonObj = new Gson().fromJson(response.toString(), JsonObject.class);
 
-			return access_token;
-		} catch (IOException e) {
-			e.printStackTrace();
+            String access_token = jsonObj.get("access_token").getAsString();
 
-			return null;
-		}
-	}
+            return access_token;
+        } catch (IOException e) {
+            e.printStackTrace();
 
-	private static String getListings(String access_token) {
-		try {
-			URL hardwareswapUrl = new URL(HARDWARESWAP_URL);
+            return null;
+        }
+    }
 
-			HttpsURLConnection connection = (HttpsURLConnection) hardwareswapUrl.openConnection();
+    private static String getListings(String access_token) {
+        try {
+            URL hardwareswapUrl = new URL(HARDWARESWAP_URL);
 
-			connection.setRequestMethod("GET");
+            HttpsURLConnection connection = (HttpsURLConnection) hardwareswapUrl.openConnection();
 
-			connection.setRequestProperty("Authorization", access_token);
-			connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
-			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestMethod("GET");
 
-			connection.setDoOutput(false);
+            connection.setRequestProperty("Authorization", access_token);
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-			int responseCode = connection.getResponseCode();
+            connection.setDoOutput(false);
 
-			System.out.println("Response code : " + responseCode);
+            int responseCode = connection.getResponseCode();
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+            System.out.println("Response code : " + responseCode);
 
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-			in.close();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
 
-			return response.toString();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            in.close();
 
-		return "";
-	}
+            return response.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    private static Feed deserializeXml(String response) {
+        System.out.println(response);
+
+        try {
+            JAXBContext context = JAXBContext.newInstance(Feed.class);
+
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+
+            StringReader reader = new StringReader(response);
+
+            Feed feed = (Feed) unmarshaller.unmarshal(reader);
+
+            return feed;
+        } catch (JAXBException e) {
+            e.printStackTrace();
+
+            return null;
+        }
+    }
 }
