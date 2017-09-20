@@ -10,7 +10,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 public class Main {
 
@@ -28,6 +30,20 @@ public class Main {
 
         for (int i = 0; i < feed.getEntry().size(); i++) {
             System.out.println(feed.getEntry().get(i).getTitle());
+        }
+
+        List<String> keywords = new ArrayList<>();
+
+        keywords = setKeywords(keywords);
+
+        System.out.println("Stuff you may be interested in:");
+
+        for (int i = 0; i < feed.getEntry().size(); i++) {
+            for(int j = 0; j < keywords.size(); j++) {
+                if (feed.getEntry().get(i).getTitle().contains(keywords.get(j))) {
+                    System.out.println(feed.getEntry().get(i).getTitle());
+                }
+            }
         }
     }
 
@@ -138,5 +154,13 @@ public class Main {
 
             return null;
         }
+    }
+
+    private static List<String> setKeywords(List<String> keywords) {
+        keywords.add("USA-PA");
+        keywords.add("FE");
+        keywords.add("Founders Edition");
+
+        return keywords;
     }
 }
