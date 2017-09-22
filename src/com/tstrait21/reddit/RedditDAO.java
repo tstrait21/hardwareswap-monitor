@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 public class RedditDAO {
 
@@ -26,6 +28,76 @@ public class RedditDAO {
         this.access_token = retrieveToken(client_id, secret);
     }
 
+    private HttpsURLConnection prepareRequest(HttpsURLConnection connection, String requestType, String credentials) throws ProtocolException {
+        connection.setRequestMethod(requestType);
+
+        connection.setRequestProperty("Authorization", credentials);
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+        return connection;
+    }
+
+    /**
+     * Make writeParameters take a List/object of some sort to create the urlParams string internally,
+     * rather than being passed in preformatted.
+     */
+    private HttpsURLConnection writeParameters(HttpsURLConnection connection, String urlParams) throws IOException {
+        connection.setDoOutput(true);
+
+        DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+
+        dos.writeBytes(urlParams);
+        dos.flush();
+        dos.close();
+
+        return connection;
+    }
+
+    private String receiveResponse(HttpsURLConnection connection) throws IOException {
+        int responseCode = connection.getResponseCode();
+
+        if (responseCode == 200) {
+            String inputLine;
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = br.readLine()) != null) {
+                response.append(inputLine);
+            }
+
+            br.close();
+
+            return response.toString();
+        } else {
+            System.out.println("Response code was " + responseCode + ".");
+
+            return null;
+        }
+    }
+
+    private String retrieveToken(String client_id, String secret) {
+        try {
+            HttpsURLConnection connection = (HttpsURLConnection) new URL(ACCESS_TOKEN_URL).openConnection();
+
+            connection = prepareRequest(connection, "POST", "Basic " + new String(Base64.getEncoder().encode((client_id + ":" + secret).getBytes())));
+
+            connection = writeParameters(connection, "grant_type=" + GRANT_TYPE + "&device_id=" + DEVICE_ID);
+
+            try {
+                return new Gson().fromJson(receiveResponse(connection), JsonObject.class).get("access_token").getAsString();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return null;
+        }
+    }
+
     public boolean isTokenValid() {
         if (this.access_token != null) {
             return true;
@@ -34,110 +106,15 @@ public class RedditDAO {
         }
     }
 
-    private String retrieveToken(String client_id, String secret) {
-        try {
-            HttpsURLConnection connection = (HttpsURLConnection) new URL(ACCESS_TOKEN_URL).openConnection();
-
-            connection = prepareForPost(connection, client_id, secret);
-
-            connection = writeParameters(connection, "grant_type=" + GRANT_TYPE + "&device_id=" + DEVICE_ID);
-
-            int responseCode = connection.getResponseCode();
-
-            if (responseCode == 200) {
-                String inputLine;
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = br.readLine()) != null) {
-                    response.append(inputLine);
-                }
-
-                br.close();
-
-                String access_token = new Gson().fromJson(response.toString(), JsonObject.class).get("access_token").getAsString();
-
-                return access_token;
-            } else {
-                System.out.println("Response code was " + responseCode + ".");
-
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            return null;
-        }
-    }
-
-    private HttpsURLConnection prepareForPost(HttpsURLConnection connection, String client_id, String secret) {
-        try {
-            connection.setRequestMethod("POST");
-
-            String basicAuth = "Basic " + new String(Base64.getEncoder().encode((client_id + ":" + secret).getBytes()));
-
-            connection.setRequestProperty("Authorization", basicAuth);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-            return connection;
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-
-            return null;
-        }
-    }
-
-    private HttpsURLConnection writeParameters(HttpsURLConnection connection, String urlParams) {
-        try {
-            connection.setDoOutput(true);
-
-            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-
-            dos.writeBytes(urlParams);
-            dos.flush();
-            dos.close();
-
-            return connection;
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            return null;
-        }
-    }
-
     public String getListings() {
         try {
             HttpsURLConnection connection = (HttpsURLConnection) new URL(HARDWARESWAP_URL).openConnection();
 
-            connection.setRequestMethod("GET");
-
-            connection.setRequestProperty("Authorization", this.access_token);
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection = prepareRequest(connection, "GET", this.access_token);
 
             connection.setDoOutput(false);
 
-            int responseCode = connection.getResponseCode();
-
-            if (responseCode == 200) {
-                String inputLine;
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                StringBuffer response = new StringBuffer();
-
-                while ((inputLine = br.readLine()) != null) {
-                    response.append(inputLine);
-                }
-
-                br.close();
-
-                return response.toString();
-            } else {
-                System.out.println("Response code was " + responseCode + ".");
-
-                return null;
-            }
-
+            return receiveResponse(connection);
         } catch (IOException e) {
             e.printStackTrace();
 
