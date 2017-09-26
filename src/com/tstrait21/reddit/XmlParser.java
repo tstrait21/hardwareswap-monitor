@@ -60,7 +60,7 @@ public class XmlParser {
 
         for (int i = 0; i < this.feed.getEntry().size(); i++) {
             for(int j = 0; j < keywords.size(); j++) {
-                if (this.feed.getEntry().get(i).getTitle().contains(keywords.get(j))) {
+                if (this.feed.getEntry().get(i).getTitle().toLowerCase().contains(keywords.get(j).toLowerCase())) {
                     System.out.println(this.feed.getEntry().get(i).getTitle());
                 }
             }
