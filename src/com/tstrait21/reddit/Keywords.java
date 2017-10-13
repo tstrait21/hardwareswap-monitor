@@ -9,7 +9,7 @@ import java.util.List;
 public class Keywords {
 
     private String filepath;
-    private List<String> keywordList;
+    public List<String> keywordList;
 
     public Keywords(String filepath) {
         this.filepath = filepath;

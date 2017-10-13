@@ -2,6 +2,8 @@ package com.tstrait21.reddit;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -15,6 +17,8 @@ import java.util.Base64;
 import java.util.List;
 
 public class RedditDAO {
+
+    private static final Logger logger = LogManager.getLogger(RedditDAO.class);
 
     private String access_token;
 
@@ -70,7 +74,7 @@ public class RedditDAO {
 
             return response.toString();
         } else {
-            System.out.println("Response code was " + responseCode + ".");
+            logger.warn("Response code was " + responseCode + ".");
 
             return null;
         }

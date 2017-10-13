@@ -1,6 +1,8 @@
 package com.tstrait21.reddit;
 
 import com.tstrait21.reddit.entity.Feed;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -11,8 +13,10 @@ import java.util.List;
 
 public class XmlParser {
 
+    private static final Logger logger = LogManager.getLogger(XmlParser.class);
+
     private String response;
-    private Feed feed;
+    public Feed feed;
 
     public XmlParser(String response) {
         this.response = response;
@@ -20,7 +24,7 @@ public class XmlParser {
     }
 
     private Feed deserializeXml() {
-        System.out.println(this.response);
+        logger.info(this.response);
 
         try {
             JAXBContext context = JAXBContext.newInstance(Feed.class);
@@ -39,29 +43,17 @@ public class XmlParser {
         }
     }
 
-    public List<String> setKeywords(List<String> keywords) {
-        keywords.add("USA-PA");
-        keywords.add("FE");
-        keywords.add("Founders Edition");
-
-        return keywords;
-    }
-
-    public void checkForKeywords() {
+    public void checkForKeywords(List<String> keywordList) {
         for (int i = 0; i < this.feed.getEntry().size(); i++) {
-            System.out.println(this.feed.getEntry().get(i).getTitle());
+            logger.info(this.feed.getEntry().get(i).getTitle());
         }
 
-        List<String> keywords = new ArrayList<>();
-
-        keywords = this.setKeywords(keywords);
-
-        System.out.println("Stuff you may be interested in:");
+        logger.info("Stuff you may be interested in:");
 
         for (int i = 0; i < this.feed.getEntry().size(); i++) {
-            for(int j = 0; j < keywords.size(); j++) {
-                if (this.feed.getEntry().get(i).getTitle().toLowerCase().contains(keywords.get(j).toLowerCase())) {
-                    System.out.println(this.feed.getEntry().get(i).getTitle());
+            for(int j = 0; j < keywordList.size(); j++) {
+                if (this.feed.getEntry().get(i).getTitle().toLowerCase().contains(keywordList.get(j).toLowerCase())) {
+                    logger.info(this.feed.getEntry().get(i).getTitle());
                 }
             }
         }
