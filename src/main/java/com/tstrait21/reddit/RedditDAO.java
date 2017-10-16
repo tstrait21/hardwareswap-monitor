@@ -32,6 +32,28 @@ public class RedditDAO {
         this.access_token = retrieveToken(client_id, secret);
     }
 
+    private String retrieveToken(String client_id, String secret) {
+        try {
+            HttpsURLConnection connection = (HttpsURLConnection) new URL(ACCESS_TOKEN_URL).openConnection();
+
+            connection = prepareRequest(connection, "POST", "Basic " + new String(Base64.getEncoder().encode((client_id + ":" + secret).getBytes())));
+
+            connection = writeParameters(connection, "grant_type=" + GRANT_TYPE + "&device_id=" + DEVICE_ID);
+
+            try {
+                return new Gson().fromJson(receiveResponse(connection), JsonObject.class).get("access_token").getAsString();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return null;
+        }
+    }
+
     private HttpsURLConnection prepareRequest(HttpsURLConnection connection, String requestType, String credentials) throws ProtocolException {
         connection.setRequestMethod(requestType);
 
@@ -75,28 +97,6 @@ public class RedditDAO {
             return response.toString();
         } else {
             logger.warn("Response code was " + responseCode + ".");
-
-            return null;
-        }
-    }
-
-    private String retrieveToken(String client_id, String secret) {
-        try {
-            HttpsURLConnection connection = (HttpsURLConnection) new URL(ACCESS_TOKEN_URL).openConnection();
-
-            connection = prepareRequest(connection, "POST", "Basic " + new String(Base64.getEncoder().encode((client_id + ":" + secret).getBytes())));
-
-            connection = writeParameters(connection, "grant_type=" + GRANT_TYPE + "&device_id=" + DEVICE_ID);
-
-            try {
-                return new Gson().fromJson(receiveResponse(connection), JsonObject.class).get("access_token").getAsString();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
 
             return null;
         }

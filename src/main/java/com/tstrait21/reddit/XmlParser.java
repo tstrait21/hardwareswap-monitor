@@ -24,7 +24,7 @@ public class XmlParser {
     }
 
     private Feed deserializeXml() {
-        logger.info(this.response);
+        logger.debug(this.response);
 
         try {
             JAXBContext context = JAXBContext.newInstance(Feed.class);

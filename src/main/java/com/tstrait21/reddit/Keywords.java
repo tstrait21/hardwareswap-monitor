@@ -24,7 +24,9 @@ public class Keywords {
                 this.keywordList.add(currentLine);
             }
         } catch (IOException e) {
+            e.printStackTrace();
 
+            return null;
         }
 
         return new ArrayList<>();
