@@ -1,34 +1,37 @@
 package com.tstrait21.reddit;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Keywords {
 
-    private String filepath;
     public List<String> keywordList;
 
-    public Keywords(String filepath) {
-        this.filepath = filepath;
+    public Keywords() {
         this.keywordList = getKeywordList();
     }
 
     private List<String> getKeywordList() {
-        try (BufferedReader br = new BufferedReader(new FileReader(this.filepath))) {
+        List<String> keywordList = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(this.getClass().getClassLoader().getResource("keywords.txt").getFile())))) {
             String currentLine;
 
             while ((currentLine = br.readLine()) != null) {
-                this.keywordList.add(currentLine);
+                keywordList.add(currentLine);
             }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
 
             return null;
         }
 
-        return new ArrayList<>();
+        return keywordList;
     }
 }
