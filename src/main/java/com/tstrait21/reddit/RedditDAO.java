@@ -43,12 +43,12 @@ public class RedditDAO {
             try {
                 return new Gson().fromJson(receiveResponse(connection), JsonObject.class).get("access_token").getAsString();
             } catch (NullPointerException e) {
-                e.printStackTrace();
+                logger.error("Error retrieving access token.  Invalid credentials.");
 
                 return null;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to establish connection.");
 
             return null;
         }
@@ -64,10 +64,6 @@ public class RedditDAO {
         return connection;
     }
 
-    /**
-     * Make writeParameters take a List/object of some sort to create the urlParams string internally,
-     * rather than being passed in preformatted.
-     */
     private HttpsURLConnection writeParameters(HttpsURLConnection connection, String urlParams) throws IOException {
         connection.setDoOutput(true);
 
