@@ -1,11 +1,16 @@
 package com.tstrait21.reddit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Keywords {
+
+    private static final Logger logger = LogManager.getLogger(Keywords.class);
 
     public List<String> keywordList;
 
@@ -23,11 +28,11 @@ public class Keywords {
                 keywordList.add(currentLine);
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("Error - unable to retrieve keywords.txt.");
 
             return null;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error occurred while reading keywords.txt.");
 
             return null;
         }

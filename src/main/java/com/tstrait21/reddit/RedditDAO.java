@@ -20,13 +20,13 @@ public class RedditDAO {
 
     private static final Logger logger = LogManager.getLogger(RedditDAO.class);
 
-    private String access_token;
-
     private final String ACCESS_TOKEN_URL = "https://www.reddit.com/api/v1/access_token";
     private final String GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client";
     private final String DEVICE_ID = "DO_NOT_TRACK_THIS_DEVICE";
 
     private final String HARDWARESWAP_URL = "https://www.reddit.com/r/hardwareswap/new.xml?sort=new";
+
+    private String access_token;
 
     public RedditDAO(String client_id, String secret) {
         this.access_token = retrieveToken(client_id, secret);
@@ -48,7 +48,7 @@ public class RedditDAO {
                 return null;
             }
         } catch (IOException e) {
-            logger.error("Unable to establish connection.");
+            logger.error("Error - unable to establish connection when retrieving access token.");
 
             return null;
         }
@@ -116,7 +116,7 @@ public class RedditDAO {
 
             return receiveResponse(connection);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error - unable to retrieve listings.");
 
             return null;
         }

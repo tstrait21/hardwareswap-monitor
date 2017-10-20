@@ -16,9 +16,9 @@ public class Main {
             if (dao.isTokenValid()) {
                 XmlParser xmlParser = new XmlParser(dao.getListings());
 
-                Keywords keywords = new Keywords();
-
-                xmlParser.checkForKeywords(keywords.keywordList);
+                if (xmlParser.isFeedValid()) {
+                    xmlParser.checkForKeywords(new Keywords().keywordList);
+                }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.fatal("Error - no credentials provided.  Please provide client_id and client_secret as parameters.");

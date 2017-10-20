@@ -6,7 +6,10 @@ import org.apache.logging.log4j.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import java.io.IOError;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +19,7 @@ public class XmlParser {
     private static final Logger logger = LogManager.getLogger(XmlParser.class);
 
     private String response;
-    public Feed feed;
+    private Feed feed;
 
     public XmlParser(String response) {
         this.response = response;
@@ -40,6 +43,18 @@ public class XmlParser {
             e.printStackTrace();
 
             return null;
+        } catch (NullPointerException e) {
+            logger.error("Error - issue reading the response from Reddit's API.");
+
+            return null;
+        }
+    }
+
+    public boolean isFeedValid() {
+        if (this.feed != null) {
+            return true;
+        } else {
+            return false;
         }
     }
 
