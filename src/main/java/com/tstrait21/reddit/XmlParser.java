@@ -40,8 +40,8 @@ public class XmlParser {
 
             return feed;
         } catch (JAXBException e) {
-            e.printStackTrace();
-
+            logger.error("Error - issue consuming the response from Reddit's API.");
+            
             return null;
         } catch (NullPointerException e) {
             logger.error("Error - issue reading the response from Reddit's API.");
