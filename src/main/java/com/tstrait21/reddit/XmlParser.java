@@ -41,7 +41,7 @@ public class XmlParser {
             return feed;
         } catch (JAXBException e) {
             logger.error("Error - issue consuming the response from Reddit's API.");
-            
+
             return null;
         } catch (NullPointerException e) {
             logger.error("Error - issue reading the response from Reddit's API.");
@@ -59,16 +59,18 @@ public class XmlParser {
     }
 
     public void checkForKeywords(List<String> keywordList) {
+        logger.info("The 25 most recent posts:");
+
         for (int i = 0; i < this.feed.getEntry().size(); i++) {
-            logger.info(this.feed.getEntry().get(i).getTitle());
+            logger.info("\t" + this.feed.getEntry().get(i).getTitle());
         }
 
-        logger.info("Stuff you may be interested in:");
+        logger.info("Stuff that may interest you from the 25 most recent posts:");
 
         for (int i = 0; i < this.feed.getEntry().size(); i++) {
             for(int j = 0; j < keywordList.size(); j++) {
                 if (this.feed.getEntry().get(i).getTitle().toLowerCase().contains(keywordList.get(j).toLowerCase())) {
-                    logger.info(this.feed.getEntry().get(i).getTitle());
+                    logger.info("\t" + this.feed.getEntry().get(i).getTitle());
                 }
             }
         }
